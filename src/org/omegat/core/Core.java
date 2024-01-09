@@ -48,6 +48,8 @@ import org.omegat.core.threads.VersionCheckThread;
 import org.omegat.filters2.IFilter;
 import org.omegat.filters2.master.FilterMaster;
 import org.omegat.filters2.master.PluginUtils;
+import org.omegat.gui.comicviewer.ComicViewerArea;
+import org.omegat.gui.comicviewer.IComicViewer;
 import org.omegat.gui.comments.CommentsTextArea;
 import org.omegat.gui.comments.IComments;
 import org.omegat.gui.dictionaries.DictionariesTextArea;
@@ -114,6 +116,7 @@ public final class Core {
     @SuppressWarnings("unused")
     private static MultipleTransPane multiple;
     private static INotes notes;
+    private static IComicViewer comicViewer;
     private static IComments comments;
     private static Segmenter segmenter;
 
@@ -194,6 +197,10 @@ public final class Core {
         return notes;
     }
 
+    public static IComicViewer getComicViewer() {
+    	return comicViewer;
+    }    
+    
     /**
      * Get comments area
      *
@@ -246,6 +253,7 @@ public final class Core {
         glossary = glossaryArea;
         glossaryManager = new GlossaryManager(glossaryArea);
         notes = new NotesTextArea(me);
+        comicViewer = new ComicViewerArea(me);
         comments = new CommentsTextArea(me);
         machineTranslatePane = new MachineTranslateTextArea(me);
         dictionaries = new DictionariesTextArea(me);

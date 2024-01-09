@@ -58,7 +58,7 @@
 #  @version 4.1
 #
 
-application-name=OmegaT for Comics
+application-name=OmegaT
 
 # Version strings: version, update, and revision are taken from Version.properties
 
@@ -1327,9 +1327,6 @@ MSOFFICE4_FILTER_NAME=Microsoft Office Open XML
 
 # org.omegat.filters4.xml.openxml.OpenXmlFilter.java
 OPENXML4_FILTER_NAME=Microsoft Office Open XML
-
-# org.omegat.filters2.cbz
-CBZFILTER_FILTER_NAME=Comic Book ZIP Format
 
 # Legacy org.omegat.filters3.xml.openxml.OpenXMLFilter
 OpenXML_FILTER_NAME=Microsoft Office Open XML (legacy filter)

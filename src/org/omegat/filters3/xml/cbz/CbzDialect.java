@@ -35,6 +35,8 @@ import org.omegat.filters3.xml.DefaultXMLDialect;
 /**
  * XML dialect declaration for CBZ filter.
  *
+ * Cada página pode ficar armazenada em um xml separado 
+ * 
  * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 public class CbzDialect extends DefaultXMLDialect {

@@ -28,8 +28,6 @@ package org.omegat.filters3.xml.cbz;
 
 import java.util.regex.Pattern;
 
-//import org.omegat.filters3.Attribute;
-import org.omegat.filters3.Attributes;
 import org.omegat.filters3.xml.DefaultXMLDialect;
 
 /**
@@ -40,26 +38,11 @@ import org.omegat.filters3.xml.DefaultXMLDialect;
  * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 public class CbzDialect extends DefaultXMLDialect {
-    public static final Pattern ROOT_PATTERN = Pattern.compile("Page");
+    public static final Pattern ROOT_PATTERN = Pattern.compile("ComicFile");
 
     public CbzDialect() {
         defineConstraint(CONSTRAINT_ROOT, ROOT_PATTERN);
-        defineIntactTags(new String[] { "Order", "Position" });
-        defineParagraphTags(new String[] { "Content" });
-    }
-
-    @Override
-    public Boolean validateIntactTag(String tag, Attributes atts) {
-//        if (atts != null) {
-//            for (int i = 0; i < atts.size(); i++) {
-//                Attribute oneAttribute = atts.get(i);
-//                if (oneAttribute.getName().equalsIgnoreCase("translatable")) {
-//                    return "false".equalsIgnoreCase(oneAttribute.getValue());
-//                } else if (oneAttribute.getName().equalsIgnoreCase("translate")) {
-//                    return "false".equalsIgnoreCase(oneAttribute.getValue());
-//                }
-//            }
-//        }
-        return false;
+        //defineIntactTags(new String[] { "Order", "Position" });
+        defineParagraphTags(new String[] { "TextBlock" });
     }
 }

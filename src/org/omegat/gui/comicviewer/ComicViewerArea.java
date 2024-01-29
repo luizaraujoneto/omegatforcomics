@@ -87,7 +87,9 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
 
             @Override
             public void onEntryActivated(SourceTextEntry newEntry) {
-            	System.out.println( "Event ComicViewer::onEntryActivated" + newEntry.getSrcText());
+            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getSrcText());
+            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getProtectedParts().toString());
+            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getRawProperties().toString());
             }
         });
     }

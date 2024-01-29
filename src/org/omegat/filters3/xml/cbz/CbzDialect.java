@@ -38,7 +38,7 @@ import org.omegat.filters3.xml.DefaultXMLDialect;
  * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 public class CbzDialect extends DefaultXMLDialect {
-    public static final Pattern ROOT_PATTERN = Pattern.compile("ComicFile");
+    public static final Pattern ROOT_PATTERN = Pattern.compile("ComicTranscription");
 
     public CbzDialect() {
         defineConstraint(CONSTRAINT_ROOT, ROOT_PATTERN);

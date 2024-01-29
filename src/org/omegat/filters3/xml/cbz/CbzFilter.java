@@ -72,9 +72,9 @@ public class CbzFilter extends AbstractFilter {
 
         StringBuilder sb = new StringBuilder("(ComicInfo.xml)");
 
-        sb.append("|(^[a-zA-Z]*\\d+\\.xml$)");
+        sb.append("|(ComicTranscription.xml)");
+        //sb.append("|(^[a-zA-Z]*\\d+\\.xml$)");
         
-        //sb.append("|(*d?\\.xml)");
         documents = sb.toString();
 
         translatable = Pattern.compile(documents);

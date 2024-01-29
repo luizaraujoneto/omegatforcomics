@@ -57,7 +57,7 @@ public class CbzXMLFilter extends XMLFilter {
     }
 
     public Instance[] getDefaultInstances() {
-        return new Instance[] { new Instance("*.xml", StandardCharsets.UTF_8.name(), StandardCharsets.UTF_8.name()), };
+        return new Instance[] { new Instance("Transcription.xml", StandardCharsets.UTF_8.name(), StandardCharsets.UTF_8.name()), };
     }
 
     public String getFileFormatName() {

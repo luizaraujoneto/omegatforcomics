@@ -35,8 +35,11 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.undo.UndoManager;
 
+import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
 import org.omegat.core.data.SourceTextEntry;
+import org.omegat.core.events.IApplicationEventListener;
+import org.omegat.core.events.IEditorEventListener;
 import org.omegat.core.events.IEntryEventListener;
 import org.omegat.gui.common.EntryInfoPane;
 import org.omegat.gui.main.DockableScrollPane;
@@ -58,6 +61,8 @@ import org.omegat.util.gui.UIThreadsUtil;
 public class ComicViewerArea extends EntryInfoPane<String> implements IComicViewer, IPaneMenu {
 
     private static final String EXPLANATION = new String( "Comic Viewer Area" );
+    
+    private static String comicFileName = null;
 
     UndoManager undoManager;
     private DockableScrollPane scrollPane;
@@ -81,19 +86,46 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
         CoreEvents.registerEntryEventListener(new IEntryEventListener() {
             @Override
             public void onNewFile(String activeFileName) {
+            	comicFileName = new String(activeFileName);
             	System.out.println( "Event ComicViewer::OnNewFile" + activeFileName);
             }
 
             @Override
             public void onEntryActivated(SourceTextEntry newEntry) {
-            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getSrcText());
-            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getProtectedParts().toString());
+            	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
+                        	
             	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getRawProperties().toString());
+            	System.out.println( "Event ComicViewer::onEntryActivated " + props);
+            	
             }
+
         });
     }
 
-    @Override
+    protected SegmentProperties getSegmentProperties(String[] rawProperties) {
+		
+    	SegmentProperties props = new SegmentProperties();
+    	
+    	props.setFileName(Core.getProject().getProjectProperties().getSourceRoot() + 
+    					Core.getProject().getProjectFiles().get(0).filePath);
+    	props.setPageName(rawProperties[1]);
+    	
+    	String position[] = rawProperties[9].split(",");
+    	
+        try {
+            props.setX( Integer.valueOf(position[0]));
+            props.setY( Integer.valueOf(position[1]));
+            props.setHeight( Integer.valueOf(position[2]));
+            props.setWidth( Integer.valueOf(position[3]));
+            
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid integer input");
+        }  	
+    	    	
+		return props;
+	}
+
+	@Override
     protected void onProjectOpen() {
         clear();
     }
@@ -103,7 +135,7 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
         clear();
         setText(EXPLANATION);
     }
-
+    
     /** Clears up the pane. */
     @Override
     public void clear() {
@@ -160,5 +192,54 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
     public void requestFocus() {
         StaticUIUtils.requestVisible(scrollPane);
         scrollPane.getViewport().getView().requestFocusInWindow();
+    }
+    
+    
+    private class SegmentProperties{
+    	
+    	private String fileName = null;
+    	private String pageName = null;
+    	private int pageOrder;
+    	private String pageType = null;
+    	private int readingOrder;
+    	private int x, y, width, height;
+    	
+    	public String getFileName() {
+			return fileName;
+		}
+		public void setFileName(String fileName) {
+			this.fileName = fileName;
+		}
+		public String getPageName() {
+			return pageName;
+		}
+		public void setPageName(String pageName) {
+			this.pageName = pageName;
+		}
+		public int getX() {
+			return x;
+		}
+		public void setX(int x) {
+			this.x = x;
+		}
+		public int getY() {
+			return y;
+		}
+		public void setY(int y) {
+			this.y = y;
+		}
+		public int getWidth() {
+			return width;
+		}
+		public void setWidth(int width) {
+			this.width = width;
+		}
+		public int getHeight() {
+			return height;
+		}
+		public void setHeight(int height) {
+			this.height = height;
+		}
+    	
     }
 }

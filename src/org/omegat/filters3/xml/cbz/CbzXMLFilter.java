@@ -39,12 +39,10 @@ import org.xml.sax.Attributes;
  * Filter for OpenDocument XML files that are inside there the OpenDocument file
  * (which is actually a ZIP file).
  *
- * @author Maxym Mykhalchuk
+ * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 public class CbzXMLFilter extends XMLFilter {
 	
-    private ArrayList<String> props = new ArrayList<String>();
-    private StringBuilder text = new StringBuilder();
     private ArrayList<String> entryText = new ArrayList<String>();
     private ArrayList<List<ProtectedPart>> protectedParts = new ArrayList<List<ProtectedPart>>();
 
@@ -81,7 +79,10 @@ public class CbzXMLFilter extends XMLFilter {
     		textBlock = new TextBlock();
     		
     		textBlock.setReadingOrder( atts.getValue("ReadingOrder"));
-    		textBlock.setPosition( atts.getValue("Position"));        	
+    		textBlock.setPosition( atts.getValue("Position"));  
+    		
+    		page.addTextBlock(textBlock);
+    		
         } 
 
     }
@@ -89,34 +90,47 @@ public class CbzXMLFilter extends XMLFilter {
     @Override
     public void tagEnd(String path) {
     	
-    	if (path.endsWith("ComicPage/TextBlock")) {
-        	textBlock.setText(text.toString());
-      
-        	addProperty("PageName", page.getPageName());
-        	addProperty("PageOrder", page.getPageOrder());
-        	addProperty("PageType", page.getPageType());
-        	
-        	addProperty("ReadingOrder", textBlock.getReadingOrder());
-        	addProperty("Position", textBlock.getPosition());        	
-        	
-        } if (path.endsWith("ComicPage")) {
-        	 if (entryParseCallback != null) {
+    	if (path.endsWith("ComicPage")) {
+        	                            	
+            if (entryParseCallback != null) {
         
                 for (int i = 0; i < entryText.size(); i++) {
+                	
+                	String[] props = configureProperties(page, i);
+                	
                     entryParseCallback.addEntryWithProperties(null, entryText.get(i), null, false,
-                            finalizeProperties(), null, this, protectedParts.get(i));
+                            props, null, this, protectedParts.get(i));
                 }
             }
 
+        	page.clearTextBlocks();
         	page = null;
-        	props.clear();
             entryText.clear();
             protectedParts.clear();
         } 
     }    
 
     
-    /**
+    private String[] configureProperties(ComicPage page, int i) {
+		
+    	ArrayList<String> props = new ArrayList<String>();
+    	
+    	props.add("PageName" );
+    	props.add(page.getPageName());
+    	props.add("PageOrder" );
+    	props.add(page.getPageOrder());
+    	props.add("PageType");
+    	props.add(page.getPageType());
+    	
+    	props.add("ReadingOrder");
+    	props.add(page.getTextBlock(i).getReadingOrder());
+    	props.add("Position" );
+    	props.add(page.getTextBlock(i).getPosition());	
+    	
+    	return props.toArray(new String[props.size()]);
+	}
+
+	/**
      * {@inheritDoc}
      */
     @Override
@@ -135,32 +149,24 @@ public class CbzXMLFilter extends XMLFilter {
             return entry;
         }
     }
-    
-    
-    private void addProperty(String key, String value) {
-        props.add(key);
-        props.add(value);
-    }
-
-    private String[] finalizeProperties() {
-        if (props.isEmpty()) {
-            return null;
-        }
-        return props.toArray(new String[props.size()]);
-    }
-
-    
- 
-    @SuppressWarnings("unused")
-	private class ComicPage{
+        
+    private class ComicPage{
     	
     	private String pageName = null;
     	private String pageOrder = null;
     	private String pageType = null;
     	
+    	private ArrayList<TextBlock> textBlocks = new ArrayList<TextBlock>();
+    	
+		public void clearTextBlocks() {
+			this.textBlocks.clear();			
+		}
+		public TextBlock getTextBlock(int i) {
+			return textBlocks.get(i);
+		}
 		public String getPageName() {
 			return pageName;
-		}
+		}		
 		public void setPageName(String pageName) {
 			this.pageName = new String( pageName );
 		}
@@ -176,20 +182,16 @@ public class CbzXMLFilter extends XMLFilter {
 		public void setPageType(String pageType) {
 			this.pageType = new String( pageType );
 		}
-
-    	
-    	
-    	
-    	
+		
+		public void addTextBlock(TextBlock textBlock) {
+			this.textBlocks.add(textBlock);
+		}
     }
- 	
-    
-    @SuppressWarnings("unused")
+ 	   
 	private class TextBlock{
 
 		private String readingOrder = null;
     	private String position = null;
-    	private String text = null;
         	  	
     	public String getPosition() {
 			return position;
@@ -197,14 +199,6 @@ public class CbzXMLFilter extends XMLFilter {
 
 		public void setPosition(String position) {
 			this.position = new String( position );
-		}
-
-		public String getText() {
-			return text;
-		}
-
-		public void setText(String text) {
-			this.text = new String( text );
 		}
 
     	public String getReadingOrder() {

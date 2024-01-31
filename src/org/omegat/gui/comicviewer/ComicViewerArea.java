@@ -52,8 +52,7 @@ import org.omegat.util.gui.UIThreadsUtil;
 /**
  * This is a pane that displays notes on translation units.
  *
- * @author Martin Fleurke
- * @author Aaron Madlon-Kay
+ * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 @SuppressWarnings("serial")
 public class ComicViewerArea extends EntryInfoPane<String> implements IComicViewer, IPaneMenu {
@@ -63,11 +62,11 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
     UndoManager undoManager;
     private DockableScrollPane scrollPane;
 
-    /** Creates new Notes Text Area Pane */
+    /** Creates new Comic Viewer Area Pane */
     public ComicViewerArea(IMainWindow mw) {
         super(true);
 
-        String title = new String( "Comic Viewer" ); // OStrings.getString("GUI_NOTESWINDOW_SUBWINDOWTITLE_Notes");
+        String title = OStrings.getString("GUI_COMICVIEWERWINDOW_SUBWINDOWTITLE_ComicViewer");
         scrollPane = new DockableScrollPane("COMICVIEWER", title, this, true);
         mw.addDockable(scrollPane);
 

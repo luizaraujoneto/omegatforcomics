@@ -30,17 +30,22 @@ package org.omegat.gui.comicviewer;
 
 import java.awt.Dimension;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.BufferedInputStream;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -52,6 +57,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
+import org.omegat.core.data.LastSegmentManager;
 import org.omegat.core.data.SourceTextEntry;
 import org.omegat.core.events.IApplicationEventListener;
 import org.omegat.core.events.IEditorEventListener;
@@ -68,6 +74,7 @@ import org.omegat.util.gui.IPaneMenu;
 import org.omegat.util.gui.JTextPaneLinkifier;
 import org.omegat.util.gui.StaticUIUtils;
 import org.omegat.util.gui.UIThreadsUtil;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is a pane that displays notes on translation units.
@@ -114,7 +121,12 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
             public void onEntryActivated(SourceTextEntry newEntry) {
             	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
             	
-            	updateComicPage(props);
+            	try {
+            		updateComicPage(props);	
+            	} catch (Exception e) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
+
+				}            	
                         	
             	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getRawProperties().toString());
             	System.out.println( "Event ComicViewer::onEntryActivated " + props);
@@ -124,175 +136,29 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
         });
     }
 
-    protected void updateComicPage(SegmentProperties props)  throws IOException{
+    protected void updateComicPage(SegmentProperties props) throws IOException{
 
-    	File inFile = new File(props.getFileName());
-    	
-    	try (ZipFile zipfile = new ZipFile(inFile)) {
-    	    Enumeration<? extends ZipEntry> unsortedZipcontents = zipfile.entries();
-    	    List<? extends ZipEntry> filelist = Collections.list(unsortedZipcontents);
-    	    Collections.sort(filelist, this::compareZipEntries);
-
-    	    for (ZipEntry zipentry : filelist) {
-    	        String shortname = removePath(zipentry.getName());
-    	    
-    	    
-    	}
+        String fileToBeExtracted=props.getPageName();
+        String zipPackage=props.getFileName();        
+        OutputStream out = new FileOutputStream(fileToBeExtracted);
+        FileInputStream fileInputStream = new FileInputStream(zipPackage);
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
+        ZipInputStream zin = new ZipInputStream(bufferedInputStream);
+        ZipEntry ze = null;
+        while ((ze = zin.getNextEntry()) != null) {
+            if (ze.getName().equals(fileToBeExtracted)) {
+                byte[] buffer = new byte[9000];
+                int len;
+                while ((len = zin.read(buffer)) != -1) {
+                    out.write(buffer, 0, len);
+                }
+                out.close();
+                break;
+            }
+        }
+        zin.close();
 		
 	}
-
-    /**
-     * @param fileName A filename with a path
-     * @return A string without the path
-     */
-    private static String removePath(String fileName) {
-        if (fileName.lastIndexOf('/') >= 0) {
-            fileName = fileName.substring(fileName.lastIndexOf('/') + 1);
-        }  else if (fileName.lastIndexOf('\\') >= 0) { // Some weird files may use a backslash
-            fileName = fileName.substring(fileName.lastIndexOf('\\') + 1);
-        }
-        return fileName;
-    }
-
-    /**
-     * @param fileName A filename
-     * @return The filename without an .xml extension if found in it
-     */
-    private static String removeXML(String fileName) {
-        if (fileName.endsWith(".xml")) {
-            fileName = fileName.substring(0, fileName.lastIndexOf(".xml"));
-        }
-        return fileName;
-    }
-    
-    public int compareZipEntries(ZipEntry z1, ZipEntry z2) {
-    
-    	
-        String s1 = z1.getName();
-        String s2 = z2.getName();
-        
-//        return s1.compareTo(s2);
-//    }
-    
-        String[] words1 = s1.split("\\d+\\.");
-        String[] words2 = s2.split("\\d+\\.");
-        // Digits at the end and same text
-        if ((words1.length > 1 && words2.length > 1) && // Digits
-                (words1[0].equals(words2[0]))) { // Same text
-            int number1 = 0;
-            int number2 = 0;
-            Matcher getDigits = DIGITS.matcher(s1);
-            if (getDigits.find()) {
-                number1 = Integer.parseInt(getDigits.group(1));
-            }
-            getDigits = DIGITS.matcher(s2);
-            if (getDigits.find()) {
-                number2 = Integer.parseInt(getDigits.group(1));
-            }
-            if (number1 > number2) {
-                return 1;
-            } else if (number1 < number2) {
-                return -1;
-            } else {
-                return 0;
-            }
-        } else {
-            String shortname1 = removePath(words1[0]);
-            shortname1 = removeXML(shortname1);
-            String shortname2 = removePath(words2[0]);
-            shortname2 = removeXML(shortname2);
-
-            // Specific case for Excel
-            // because "comments" is present twice in DOCUMENTS
-            if (shortname1.indexOf("sharedStrings") >= 0 || shortname2.indexOf("sharedStrings") >= 0) {
-                if (shortname2.indexOf("sharedStrings") >= 0) {
-                    return 1; // sharedStrings must be first
-                } else {
-                    return -1;
-                }
-            }
-
-            int index1 = documents.indexOf(shortname1);
-            int index2 = documents.indexOf(shortname2);
-
-            if (index1 > index2) {
-                return 1;
-            } else if (index1 < index2) {
-                return -1;
-            } else { // Documents were not in DOCUMENTS, we keep the normal order
-                return s1.compareTo(s2);
-            }
-        }
-    }  
-
-    
-    
-    public void processFile(File inFile, File outFile, FilterContext fc) throws IOException,
-    TranslationException {
-
-ZipOutputStream zipout = null;
-try (ZipFile zipfile = new ZipFile(inFile)) {
-    if (outFile != null) {
-        zipout = new ZipOutputStream(new FileOutputStream(outFile));
-    }
-    Enumeration<? extends ZipEntry> unsortedZipcontents = zipfile.entries();
-    List<? extends ZipEntry> filelist = Collections.list(unsortedZipcontents);
-    // Sort filenames, because zipfile.entries give a random order
-    // We use a simplified natural sort, to have slide1, slide2 ...
-    // slide10
-    // instead of slide1, slide10, slide 2
-    // We also order files arbitrarily, to have, for instance
-    // documents.xml before comments.xml
-    Collections.sort(filelist, this::compareZipEntries);
-
-    for (ZipEntry zipentry : filelist) {
-        String shortname = removePath(zipentry.getName());
-        if (translatable.matcher(shortname).matches()) {
-            File tmpin = tmp();
-            FileUtils.copyInputStreamToFile(zipfile.getInputStream(zipentry), tmpin);
-            File tmpout = null;
-            if (zipout != null) {
-                tmpout = tmp();
-            }
-            try {
-                createXMLFilter().processFile(tmpin, tmpout, fc);
-            } catch (Exception e) {
-                LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
-                throw new TranslationException(e.getLocalizedMessage() + "\n"
-                        + OStrings.getString("OpenXML_ERROR_IN_FILE") + inFile, e);
-            }
-
-            if (zipout != null) {
-                ZipEntry outEntry = new ZipEntry(zipentry.getName());
-                zipout.putNextEntry(outEntry);
-                FileUtils.copyFile(tmpout, zipout);
-                zipout.closeEntry();
-            }
-            if (!tmpin.delete()) {
-                tmpin.deleteOnExit();
-            }
-            if (tmpout != null && !tmpout.delete()) {
-                tmpout.deleteOnExit();
-            }
-        } else {
-            if (zipout != null) {
-                ZipEntry outEntry = new ZipEntry(zipentry.getName());
-                zipout.putNextEntry(outEntry);
-                try (InputStream is = zipfile.getInputStream(zipentry)) {
-                    IOUtils.copy(is, zipout);
-                }
-                zipout.closeEntry();
-            }
-        }
-    }
-} finally {
-    if (zipout != null) {
-        zipout.close();
-    }
-}
-}
-
-    
     
     
 	protected SegmentProperties getSegmentProperties(String[] rawProperties) {

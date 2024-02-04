@@ -29,41 +29,37 @@
 package org.omegat.gui.comicviewer;
 
 import java.awt.Dimension;
+import java.awt.Image;
+import java.awt.image.BufferedImage;
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.BufferedInputStream;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.util.regex.Matcher;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipOutputStream;
 
+import javax.imageio.ImageIO;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
-import org.omegat.core.data.LastSegmentManager;
 import org.omegat.core.data.SourceTextEntry;
-import org.omegat.core.events.IApplicationEventListener;
-import org.omegat.core.events.IEditorEventListener;
 import org.omegat.core.events.IEntryEventListener;
-import org.omegat.filters2.FilterContext;
-import org.omegat.filters2.TranslationException;
 import org.omegat.gui.common.EntryInfoPane;
 import org.omegat.gui.main.DockableScrollPane;
 import org.omegat.gui.main.IMainWindow;
@@ -74,7 +70,6 @@ import org.omegat.util.gui.IPaneMenu;
 import org.omegat.util.gui.JTextPaneLinkifier;
 import org.omegat.util.gui.StaticUIUtils;
 import org.omegat.util.gui.UIThreadsUtil;
-import org.slf4j.LoggerFactory;
 
 /**
  * This is a pane that displays notes on translation units.
@@ -105,10 +100,11 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
         setEditable(false);
         setText(EXPLANATION);
         setMinimumSize(new Dimension(100, 50));
-
+        
         JTextPaneLinkifier.linkify(this);
         undoManager = new UndoManager();
         getDocument().addUndoableEditListener(undoManager);
+
         
         CoreEvents.registerEntryEventListener(new IEntryEventListener() {
             @Override
@@ -122,7 +118,9 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
             	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
             	
             	try {
-            		updateComicPage(props);	
+            		String pagePath = createComicPage(props);
+            		showComicPage(pagePath);
+            		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
 
@@ -135,8 +133,41 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
 
         });
     }
+    
+    private void addImagemAoJTextPane(Image imagem) {
+        StyledDocument doc = this.getStyledDocument();
 
-    protected void updateComicPage(SegmentProperties props) throws IOException{
+        // Cria um estilo para a imagem
+        Style style = this.addStyle("imagemStyle", null);
+        
+        Image imagemRedimensionada = imagem.getScaledInstance(-1, this.getHeight(), Image.SCALE_SMOOTH);
+
+        StyleConstants.setIcon(style, new ImageIcon(imagemRedimensionada));
+
+        // Adiciona a imagem ao documento
+        try {
+            doc.insertString(doc.getLength(), "ignorar", style);
+        } catch (BadLocationException e) {
+            e.printStackTrace();
+        }
+    }   
+
+    protected void showComicPage(String pagePath) {
+        try {
+            BufferedImage imagem = ImageIO.read(new File(pagePath));
+            ImageIcon imagemIcon = new ImageIcon(imagem);
+           
+            addImagemAoJTextPane(imagem);
+           
+            setVisible(true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Erro ao carregar a imagem", "Erro", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
+    }
+    
+    protected String createComicPage(SegmentProperties props) throws IOException{
 
         String fileToBeExtracted=props.getPageName();
         String zipPackage=props.getFileName();        
@@ -158,6 +189,8 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
         }
         zin.close();
 		
+        return fileToBeExtracted;
+        
 	}
     
     

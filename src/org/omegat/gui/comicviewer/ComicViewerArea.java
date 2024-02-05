@@ -28,8 +28,10 @@
 
 package org.omegat.gui.comicviewer;
 
+import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Image;
+import java.awt.FlowLayout;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -39,37 +41,34 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import javax.imageio.ImageIO;
+import javax.swing.BoxLayout;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Style;
-import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 import javax.swing.undo.UndoManager;
 
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
 import org.omegat.core.data.SourceTextEntry;
 import org.omegat.core.events.IEntryEventListener;
-import org.omegat.gui.common.EntryInfoPane;
 import org.omegat.gui.main.DockableScrollPane;
 import org.omegat.gui.main.IMainWindow;
 import org.omegat.util.OStrings;
 import org.omegat.util.Preferences;
-import org.omegat.util.StringUtil;
 import org.omegat.util.gui.IPaneMenu;
-import org.omegat.util.gui.JTextPaneLinkifier;
 import org.omegat.util.gui.StaticUIUtils;
-import org.omegat.util.gui.UIThreadsUtil;
 
 /**
  * This is a pane that displays notes on translation units.
@@ -77,15 +76,11 @@ import org.omegat.util.gui.UIThreadsUtil;
  * @author Luiz Araujo (luizaraujoneto@gmail.com)
  */
 @SuppressWarnings("serial")
-public class ComicViewerArea extends EntryInfoPane<String> implements IComicViewer, IPaneMenu {
-	
-	private static final Pattern DIGITS = Pattern.compile("(\\d+)\\.jpg");
-    private String documents;
-
-    private static final String EXPLANATION = new String( "Comic Viewer Area" );
+//public class ComicViewerArea extends EntryInfoPane<String> implements IComicViewer, IPaneMenu {
+public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     
-    private static String comicFileName = null;
-
+    private JLabel imageLabel = null;
+    
     UndoManager undoManager;
     private DockableScrollPane scrollPane;
 
@@ -93,26 +88,57 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
     public ComicViewerArea(IMainWindow mw) {
         super(true);
 
+    	JPanel panelToolbar;
+    	JPanel panelImage;
+        
         String title = OStrings.getString("GUI_COMICVIEWERWINDOW_SUBWINDOWTITLE_ComicViewer");
         scrollPane = new DockableScrollPane("COMICVIEWER", title, this, true);
         mw.addDockable(scrollPane);
 
-        setEditable(false);
-        setText(EXPLANATION);
+//        setEditable(false);
+//        setText(EXPLANATION);
+        
+        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        
+        panelToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        
+        panelToolbar.add(new JButton(new String("F")));
+        panelToolbar.add(new JButton(new String("P")));
+        panelToolbar.add(new JButton(new String("N")));
+        panelToolbar.add(new JButton(new String("L"))); 
+        
+        panelToolbar.setSize(new Dimension(400, 30));        
+        panelToolbar.setBorder(new LineBorder(Color.GRAY, 1));
+       
+        
+        int width = 400;
+        int height = 1000;        
+        
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        ImageIcon imageIcon = new ImageIcon(image);  
+        Graphics2D g2d = image.createGraphics();
+
+        g2d.setColor(Color.WHITE);
+        g2d.fillRect(0, 0, width, height);
+
+        g2d.dispose();
+                
+        imageLabel = new JLabel(imageIcon);
+             
+        panelImage = new JPanel();
+        panelImage.add(imageLabel);
+        panelImage.setSize(this.getWidth()- 50, this.getHeight() - 150);
+//        panelImage.add(imageLabel);  
+        
+        this.add(panelToolbar);
+        this.add(new JScrollPane(panelImage));
+        
+        setVisible(true);
+        
         setMinimumSize(new Dimension(100, 50));
         
-        JTextPaneLinkifier.linkify(this);
-        undoManager = new UndoManager();
-        getDocument().addUndoableEditListener(undoManager);
-
-        
         CoreEvents.registerEntryEventListener(new IEntryEventListener() {
-            @Override
-            public void onNewFile(String activeFileName) {
-            	comicFileName = new String(activeFileName);
-            	System.out.println( "Event ComicViewer::OnNewFile" + activeFileName);
-            }
-
+           
             @Override
             public void onEntryActivated(SourceTextEntry newEntry) {
             	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
@@ -123,49 +149,33 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
-
-				}            	
-                        	
-            	System.out.println( "Event ComicViewer::onEntryActivated " + newEntry.getRawProperties().toString());
-            	System.out.println( "Event ComicViewer::onEntryActivated " + props);
-            	
+				}                           	
             }
+
+			@Override
+			public void onNewFile(String activeFileName) {
+				// TODO Auto-generated method stub
+			}
 
         });
     }
     
-    private void addImagemAoJTextPane(Image imagem) {
-        StyledDocument doc = this.getStyledDocument();
-
-        // Cria um estilo para a imagem
-        Style style = this.addStyle("imagemStyle", null);
-        
-        Image imagemRedimensionada = imagem.getScaledInstance(-1, this.getHeight(), Image.SCALE_SMOOTH);
-
-        StyleConstants.setIcon(style, new ImageIcon(imagemRedimensionada));
-
-        // Adiciona a imagem ao documento
-        try {
-            doc.insertString(doc.getLength(), "ignorar", style);
-        } catch (BadLocationException e) {
-            e.printStackTrace();
-        }
-    }   
-
-    protected void showComicPage(String pagePath) {
+    protected void showComicPage(String pagePath) throws BadLocationException {
         try {
             BufferedImage imagem = ImageIO.read(new File(pagePath));
-            ImageIcon imagemIcon = new ImageIcon(imagem);
-           
-            addImagemAoJTextPane(imagem);
-           
-            setVisible(true);
+            ImageIcon imageIcon = new ImageIcon(imagem);           
+            
+            imageLabel.setIcon(imageIcon);
+           // imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
+//            revalidate();
+            
+//            setVisible(true);
         } catch (IOException e) {
             e.printStackTrace();
             JOptionPane.showMessageDialog(this, "Erro ao carregar a imagem", "Erro", JOptionPane.ERROR_MESSAGE);
             System.exit(1);
         }
-    }
+    }     
     
     protected String createComicPage(SegmentProperties props) throws IOException{
 
@@ -217,46 +227,46 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
 		return props;
 	}
 
-	@Override
+//	@Override
     protected void onProjectOpen() {
         clear();
     }
 
-    @Override
+//    @Override
     protected void onProjectClose() {
         clear();
-        setText(EXPLANATION);
+//        setText(EXPLANATION);
     }
     
     /** Clears up the pane. */
     @Override
     public void clear() {
-        super.clear();
-        setEditable(false);
+//        super.clear();
+//        setEditable(false);
         undoManager.discardAllEdits();
     }
 
-    public void setNoteText(String text) {
-        UIThreadsUtil.mustBeSwingThread();
-
-        if (Preferences.isPreference(Preferences.NOTIFY_NOTES)) {
-            if (StringUtil.isEmpty(text)) {
-                scrollPane.stopNotifying();
-            } else {
-                scrollPane.notify(true);
-            }
-        }
-        setText(text);
-        setEditable(true);
-    }
-
-    public String getNoteText() {
-        UIThreadsUtil.mustBeSwingThread();
-
-        String text = getText();
-        // Disallow empty note. Use null to indicate lack of note.
-        return text.isEmpty() ? null : text;
-    }
+//    public void setNoteText(String text) {
+//        UIThreadsUtil.mustBeSwingThread();
+//
+//        if (Preferences.isPreference(Preferences.NOTIFY_NOTES)) {
+//            if (StringUtil.isEmpty(text)) {
+//                scrollPane.stopNotifying();
+//            } else {
+//                scrollPane.notify(true);
+//            }
+//        }
+//        setText(text);
+//        setEditable(true);
+//    }
+//
+//    public String getNoteText() {
+//        UIThreadsUtil.mustBeSwingThread();
+//
+//        String text = getText();
+//        // Disallow empty note. Use null to indicate lack of note.
+//        return text.isEmpty() ? null : text;
+//    }
 
     @Override
     public void undo() {
@@ -334,4 +344,17 @@ public class ComicViewerArea extends EntryInfoPane<String> implements IComicView
 		}
     	
     }
+
+
+	@Override
+	public String getNoteText() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setNoteText(String note) {
+		// TODO Auto-generated method stub
+		
+	}
 }

@@ -32,6 +32,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -55,6 +56,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JToolBar;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.undo.UndoManager;
@@ -62,6 +65,7 @@ import javax.swing.undo.UndoManager;
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
 import org.omegat.core.data.SourceTextEntry;
+import org.omegat.core.events.IEditorEventListener;
 import org.omegat.core.events.IEntryEventListener;
 import org.omegat.gui.main.DockableScrollPane;
 import org.omegat.gui.main.IMainWindow;
@@ -79,7 +83,7 @@ import org.omegat.util.gui.StaticUIUtils;
 //public class ComicViewerArea extends EntryInfoPane<String> implements IComicViewer, IPaneMenu {
 public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     
-    private JLabel imageLabel = null;
+	JPanel content = null;
     
     UndoManager undoManager;
     private DockableScrollPane scrollPane;
@@ -87,54 +91,21 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     /** Creates new Comic Viewer Area Pane */
     public ComicViewerArea(IMainWindow mw) {
         super(true);
-
-    	JPanel panelToolbar;
-    	JPanel panelImage;
         
         String title = OStrings.getString("GUI_COMICVIEWERWINDOW_SUBWINDOWTITLE_ComicViewer");
         scrollPane = new DockableScrollPane("COMICVIEWER", title, this, true);
         mw.addDockable(scrollPane);
+        
+        content = new JPanel();
+        content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS)); 
+        content.setBackground(Color.WHITE);
+        content.setMaximumSize(new Dimension(600,600));
 
-//        setEditable(false);
-//        setText(EXPLANATION);
-        
-        this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-        
-        panelToolbar = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        
-        panelToolbar.add(new JButton(new String("F")));
-        panelToolbar.add(new JButton(new String("P")));
-        panelToolbar.add(new JButton(new String("N")));
-        panelToolbar.add(new JButton(new String("L"))); 
-        
-        panelToolbar.setSize(new Dimension(400, 30));        
-        panelToolbar.setBorder(new LineBorder(Color.GRAY, 1));
-       
-        
-        int width = 400;
-        int height = 1000;        
-        
-        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
-        ImageIcon imageIcon = new ImageIcon(image);  
-        Graphics2D g2d = image.createGraphics();
-
-        g2d.setColor(Color.WHITE);
-        g2d.fillRect(0, 0, width, height);
-
-        g2d.dispose();
-                
-        imageLabel = new JLabel(imageIcon);
-             
-        panelImage = new JPanel();
-        panelImage.add(imageLabel);
-        panelImage.setSize(this.getWidth()- 50, this.getHeight() - 150);
-//        panelImage.add(imageLabel);  
-        
-        this.add(panelToolbar);
-        this.add(new JScrollPane(panelImage));
-        
-        setVisible(true);
-        
+        this.add(createToolBar());
+        this.add(content);
+            
+        showComicPage(content, null);
+               
         setMinimumSize(new Dimension(100, 50));
         
         CoreEvents.registerEntryEventListener(new IEntryEventListener() {
@@ -144,8 +115,9 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
             	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
             	
             	try {
-            		String pagePath = createComicPage(props);
-            		showComicPage(pagePath);
+            		JLabel page = new JLabel(loadComicPage(props)); 
+            		
+            		showComicPage(content, page);
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
@@ -159,25 +131,57 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 
         });
     }
-    
-    protected void showComicPage(String pagePath) throws BadLocationException {
-        try {
-            BufferedImage imagem = ImageIO.read(new File(pagePath));
-            ImageIcon imageIcon = new ImageIcon(imagem);           
-            
-            imageLabel.setIcon(imageIcon);
-           // imageLabel.setPreferredSize(new Dimension(imageIcon.getIconWidth(), imageIcon.getIconHeight()));
-//            revalidate();
-            
-//            setVisible(true);
-        } catch (IOException e) {
-            e.printStackTrace();
-            JOptionPane.showMessageDialog(this, "Erro ao carregar a imagem", "Erro", JOptionPane.ERROR_MESSAGE);
-            System.exit(1);
-        }
+
+	private JToolBar createToolBar() {
+		JToolBar toolbar = new JToolBar();
+        
+        toolbar.add(new JButton(new String("F")));
+        toolbar.add(new JButton(new String("P")));
+        toolbar.add(new JButton(new String("N")));
+        toolbar.add(new JButton(new String("L"))); 
+        
+        //toolbar.setSize(new Dimension(400, 30));        
+        toolbar.setBorder(new LineBorder(Color.GRAY, 1));
+        toolbar.setBackground(Color.LIGHT_GRAY);
+        
+        return toolbar;
+	}
+	
+	private JScrollPane createImagePanel(JLabel image) {
+		
+        JScrollPane scrollImage = new JScrollPane(image, ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS, 
+        				ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
+
+        //scrollImage.setMaximumSize(d);
+        
+        return scrollImage;	
+	}
+	
+    protected void showComicPage(JPanel content, JLabel page) {
+    	
+    	if (page == null) {
+    		return;
+    	}
+    	
+		int cc = content.getComponentCount();
+		
+		for( int i=0; i<cc ;i++){
+			content.remove(0);			
+		}
+  
+
+        JToolBar toolbar = createToolBar();
+		JScrollPane imagePanel = createImagePanel(page);
+
+		content.add(toolbar);
+		content.add(imagePanel);
+		
+		content.revalidate();
+		content.repaint(); 
+
     }     
     
-    protected String createComicPage(SegmentProperties props) throws IOException{
+    protected ImageIcon loadComicPage(SegmentProperties props) throws IOException{
 
         String fileToBeExtracted=props.getPageName();
         String zipPackage=props.getFileName();        
@@ -199,7 +203,10 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
         }
         zin.close();
 		
-        return fileToBeExtracted;
+        BufferedImage imagem = ImageIO.read(new File(fileToBeExtracted));
+        ImageIcon page = new ImageIcon(imagem); 
+        
+        return page;
         
 	}
     

@@ -40,6 +40,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
@@ -58,6 +59,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.UIManager;
 import javax.swing.border.LineBorder;
 import javax.swing.text.BadLocationException;
 import javax.swing.undo.UndoManager;
@@ -69,9 +71,11 @@ import org.omegat.core.events.IEditorEventListener;
 import org.omegat.core.events.IEntryEventListener;
 import org.omegat.gui.main.DockableScrollPane;
 import org.omegat.gui.main.IMainWindow;
+import org.omegat.gui.main.MainMenuIcons;
 import org.omegat.util.OStrings;
 import org.omegat.util.Preferences;
 import org.omegat.util.gui.IPaneMenu;
+import org.omegat.util.gui.ResourcesUtil;
 import org.omegat.util.gui.StaticUIUtils;
 
 /**
@@ -139,7 +143,12 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 
         toolbar.addSeparator(new Dimension(5,10));
         
-        toolbar.add(new JButton("A", new ImageIcon("/org/omegat/gui/resources/skip-start-fill.ico")));
+        JButton first = new JButton("", //UIManager.getIcon("OmegaT.ComicViewArea.first.icon"));
+        		MainMenuIcons.newImageIcon(ResourcesUtil.getBundledImage("newUI.search.png")));        
+        first.setSize(new Dimension( 50,50));
+        first.setBorderPainted(false);
+        
+        toolbar.add(first);
         toolbar.add(new JButton("B", new ImageIcon("caret-left.ico")));
         toolbar.add(new JButton("C", new ImageIcon("org.omegat.gui.resources.caret-right.ico")));
         toolbar.add(new JButton("D", new ImageIcon("org/omegat/gui/resources/skip-end-fill.ico"))); 

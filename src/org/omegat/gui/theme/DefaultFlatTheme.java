@@ -269,6 +269,12 @@ public class DefaultFlatTheme extends DelegatingLookAndFeel {
             defaults.put("OmegaT.newUI.settings.icon@2x", getIcon("newUI.settings@2x.png"));
         }
 
+        // ComicViewArea Icons
+        defaults.put("OmegaT.ComicViewArea.first.icon", getIcon("comicviewarea.first.ico"));
+        defaults.put("OmegaT.ComicViewArea.previous.icon", getIcon("comicviewarea.previous.ico"));
+        defaults.put("OmegaT.ComicViewArea.next.icon", getIcon("comicviewarea.next.ico"));
+        defaults.put("OmegaT.ComicViewArea.last.icon", getIcon("comicviewarea.last.ico"));      
+        
         return defaults;
     }
 

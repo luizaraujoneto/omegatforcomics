@@ -102,7 +102,7 @@ public class CbzFilter extends AbstractFilter {
                 }
             }
         } catch (IOException e) {
-            LOGGER.log(Level.FINE, "Error checking if file is supported by OpenXMLFilter: " + inFile, e);
+            LOGGER.log(Level.FINE, "Error checking if file is supported by CbzFilter: " + inFile, e);
         }
         return false;
     }
@@ -221,12 +221,6 @@ public class CbzFilter extends AbstractFilter {
             }
             Enumeration<? extends ZipEntry> unsortedZipcontents = zipfile.entries();
             List<? extends ZipEntry> filelist = Collections.list(unsortedZipcontents);
-            // Sort filenames, because zipfile.entries give a random order
-            // We use a simplified natural sort, to have slide1, slide2 ...
-            // slide10
-            // instead of slide1, slide10, slide 2
-            // We also order files arbitrarily, to have, for instance
-            // documents.xml before comments.xml
             Collections.sort(filelist, this::compareZipEntries);
 
             for (ZipEntry zipentry : filelist) {

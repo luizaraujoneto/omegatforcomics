@@ -171,6 +171,10 @@ public class RealProject implements IProject {
 
     private DirectoryMonitor tmOtherLanguagesMonitor;
 
+    /** ComicData Info **/
+    
+    protected ComicBook activeComic;
+        
     /**
      * Indicates when there is an ongoing save event. Saving might take a while
      * during team sync: if a merge is required the save might be postponed
@@ -1480,6 +1484,15 @@ public class RealProject implements IProject {
         }
     }
 
+    
+    public ComicBook getActiveComic() {
+    	return this.activeComic;
+    }
+    
+    public void setActiveComic(ComicBook comicBook) {
+    	this.activeComic = comicBook;
+    }
+    
     /**
      * {@inheritDoc}
      */

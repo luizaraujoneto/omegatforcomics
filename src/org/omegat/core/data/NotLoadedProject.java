@@ -189,4 +189,13 @@ public class NotLoadedProject implements IProject {
     @Override
     public void teamSyncPrepare() throws Exception {
     }
+
+	@Override
+	public ComicBook getActiveComic() {
+		return null;
+	}
+
+	@Override
+	public void setActiveComic(ComicBook comicBook) {
+	}
 }

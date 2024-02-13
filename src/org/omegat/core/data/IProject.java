@@ -44,6 +44,16 @@ import org.omegat.util.Language;
  */
 public interface IProject {
 
+	/**
+	 * @return Active ComicBook of a Project
+	 */	
+    public ComicBook getActiveComic();
+    
+    /**
+     * @param comicBook
+     */
+    public void setActiveComic(ComicBook comicBook);
+    
     /**
      * Save project properties only.
      */
@@ -341,4 +351,6 @@ public interface IProject {
             return previous;
         }
     }
+    
+
 }

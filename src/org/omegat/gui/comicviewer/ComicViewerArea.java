@@ -62,7 +62,7 @@ import javax.swing.undo.UndoManager;
 
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
-import org.omegat.core.data.ComicData;
+import org.omegat.core.data.ComicBook;
 import org.omegat.core.data.SourceTextEntry;
 import org.omegat.core.events.IApplicationEventListener;
 import org.omegat.core.events.IEntryEventListener;
@@ -91,7 +91,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     
     JLabel imagePanel = null;
     
-	private ComicData activeComic = null;
+	private ComicBook activeComic = null;
 
     /** Creates new Comic Viewer Area Pane */
     public ComicViewerArea(IMainWindow mw) {
@@ -134,7 +134,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 								Core.getProject().getProjectFiles().get(i).filePath;
 						
 						if (comicFileName.toLowerCase().endsWith(".cbz")) {						
-							activeComic = new ComicData(comicFileName);
+//							activeComic = new ComicBook(comicFileName);
 						}
 					}
 				}
@@ -151,9 +151,9 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
             	try {
             		//ImageIcon page = loadComicPage(props); 
             		
-            		ImageIcon page = new ImageIcon( activeComic.getPage(0 ));
-            		
-            		showComicPage(page);
+//            		ImageIcon page = new ImageIcon( activeComic.getPage(0 ));
+//            		
+//            		showComicPage(page);
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );

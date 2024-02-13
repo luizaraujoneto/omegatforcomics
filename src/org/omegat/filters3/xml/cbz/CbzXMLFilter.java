@@ -29,6 +29,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.omegat.core.data.ComicPage;
+import org.omegat.core.data.ComicTextBlock;
 import org.omegat.core.data.ProtectedPart;
 import org.omegat.filters2.Instance;
 import org.omegat.filters3.xml.XMLFilter;
@@ -46,7 +48,7 @@ public class CbzXMLFilter extends XMLFilter {
     private ArrayList<String> entryText = new ArrayList<String>();
     private ArrayList<List<ProtectedPart>> protectedParts = new ArrayList<List<ProtectedPart>>();
 
-    private TextBlock textBlock = null;
+    private ComicTextBlock textBlock = null;
 	private ComicPage page;
     
     /** Creates a new instance of CbzXMLFilter */
@@ -65,25 +67,25 @@ public class CbzXMLFilter extends XMLFilter {
     @Override
     public void tagStart(String path, Attributes atts) {
 
-    	if (atts != null && path.endsWith("ComicPage")) {
-    		
-    		page = new ComicPage();
-    		
-    		page.setPageName(atts.getValue("PageName"));
-    		page.setPageOrder(atts.getValue("PageOrder"));
-    		page.setPageType(atts.getValue("PageType"));
-    	}
-    	
-    	if (atts != null && path.endsWith("TextBlock")) {
-    	
-    		textBlock = new TextBlock();
-    		
-    		textBlock.setReadingOrder( atts.getValue("ReadingOrder"));
-    		textBlock.setPosition( atts.getValue("Position"));  
-    		
-    		page.addTextBlock(textBlock);
-    		
-        } 
+//    	if (atts != null && path.endsWith("ComicPage")) {
+//    		
+//    		page = new ComicPage();
+//    		
+//    		page.setPageName(atts.getValue("PageName"));
+//    		page.setPageOrder(atts.getValue("PageOrder"));
+//    		page.setPageType(atts.getValue("PageType"));
+//    	}
+//    	
+//    	if (atts != null && path.endsWith("TextBlock")) {
+//    	
+//    		textBlock = new TextBlock();
+//    		
+//    		textBlock.setReadingOrder( atts.getValue("ReadingOrder"));
+//    		textBlock.setPosition( atts.getValue("Position"));  
+//    		
+//    		page.addTextBlock(textBlock);
+//    		
+//        } 
 
     }
     
@@ -122,10 +124,10 @@ public class CbzXMLFilter extends XMLFilter {
     	props.add("PageType");
     	props.add(page.getPageType());
     	
-    	props.add("ReadingOrder");
-    	props.add(page.getTextBlock(i).getReadingOrder());
-    	props.add("Position" );
-    	props.add(page.getTextBlock(i).getPosition());	
+//    	props.add("ReadingOrder");
+//    	props.add(page.getTextBlock(i).getReadingOrder());
+//    	props.add("Position" );
+//    	props.add(page.getTextBlock(i).getPosition());	
     	
     	return props.toArray(new String[props.size()]);
 	}
@@ -148,67 +150,6 @@ public class CbzXMLFilter extends XMLFilter {
         } else {
             return entry;
         }
-    }
-        
-    private class ComicPage{
-    	
-    	private String pageName = null;
-    	private String pageOrder = null;
-    	private String pageType = null;
-    	
-    	private ArrayList<TextBlock> textBlocks = new ArrayList<TextBlock>();
-    	
-		public void clearTextBlocks() {
-			this.textBlocks.clear();			
-		}
-		public TextBlock getTextBlock(int i) {
-			return textBlocks.get(i);
-		}
-		public String getPageName() {
-			return pageName;
-		}		
-		public void setPageName(String pageName) {
-			this.pageName = new String( pageName );
-		}
-		public String getPageOrder() {
-			return pageOrder;
-		}
-		public void setPageOrder(String pageOrder) {
-			this.pageOrder = new String(  pageOrder );
-		}
-		public String getPageType() {
-			return pageType;
-		}
-		public void setPageType(String pageType) {
-			this.pageType = new String( pageType );
-		}
-		
-		public void addTextBlock(TextBlock textBlock) {
-			this.textBlocks.add(textBlock);
-		}
-    }
- 	   
-	private class TextBlock{
-
-		private String readingOrder = null;
-    	private String position = null;
-        	  	
-    	public String getPosition() {
-			return position;
-		}
-
-		public void setPosition(String position) {
-			this.position = new String( position );
-		}
-
-    	public String getReadingOrder() {
-    		return readingOrder;
-    	}
-  
-		public void setReadingOrder(String readingOrder) {
-			this.readingOrder = new String( readingOrder );
-		}
-    	
     }
     
 }

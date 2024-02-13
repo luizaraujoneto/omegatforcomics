@@ -35,6 +35,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.omegat.core.Core;
 import org.omegat.core.TestCore;
+import org.omegat.core.data.ComicBook;
 import org.omegat.core.data.EntryKey;
 import org.omegat.core.data.ExternalTMX;
 import org.omegat.core.data.IProject;
@@ -191,6 +192,18 @@ public class FalseFriendsTest extends TestCore {
             public void compileProjectAndCommit(String sourcePattern, boolean doPostProcessing, boolean commitTargetFiles)
             throws Exception {
             }
+
+			@Override
+			public ComicBook getActiveComic() {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public void setActiveComic(ComicBook comicBook) {
+				// TODO Auto-generated method stub
+				
+			}
         });
         LanguageToolWrapper.setBridgeFromCurrentProject();
     }

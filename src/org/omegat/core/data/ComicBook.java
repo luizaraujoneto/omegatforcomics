@@ -90,6 +90,15 @@ public class ComicBook {
 	public String getComicFilePath() {
 		return this.comicFilePath;
 	}
+
+	public ComicPage getPage(String value) {
+		for (ComicPage page : getPages()) {
+			if (page.getPageName().equals(value )) {
+				return page;
+			}			
+		}		
+		return null;
+	}
 	
 	
 }

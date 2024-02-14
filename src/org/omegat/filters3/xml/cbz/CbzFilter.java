@@ -28,6 +28,8 @@
 
 package org.omegat.filters3.xml.cbz;
 
+import java.awt.Image;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -47,6 +49,8 @@ import java.util.regex.Pattern;
 import java.util.zip.*;
 
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.swing.ImageIcon;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -260,15 +264,20 @@ public class CbzFilter extends AbstractFilter {
                 } else  if (!zipentry.isDirectory() && zipentry.getName().toLowerCase().endsWith(".jpg")) {
                     
                 	ComicPage page = new ComicPage(comicBook);
-                	
-                    ZipInputStream zipInputStream = new ZipInputStream(zipfile.getInputStream(zipentry));
-                	
-                	page.setPageImage(ImageIO.read(zipInputStream));
-                    page.setPageName(zipentry.getName());
+                	page.setPageName(zipentry.getName());
+
+                    InputStream inputStream = zipfile.getInputStream(zipentry);
+                    Image zipImage = ImageIO.read(inputStream);
+                    
+                    ImageIcon pageImage = new ImageIcon(zipImage);
+                    
+                    if (pageImage != null) {
+                    	page.setPageImage(pageImage.getImage());
+                    }
                     
                     comicBook.getPages().add(page);
                     
-                    zipInputStream.closeEntry();
+//                    zipin.closeEntry();
                               
                 } else {
                     if (zipout != null) {

@@ -29,6 +29,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.omegat.core.Core;
 import org.omegat.core.data.ComicPage;
 import org.omegat.core.data.ComicTextBlock;
 import org.omegat.core.data.ProtectedPart;
@@ -67,25 +68,35 @@ public class CbzXMLFilter extends XMLFilter {
     @Override
     public void tagStart(String path, Attributes atts) {
 
-//    	if (atts != null && path.endsWith("ComicPage")) {
-//    		
-//    		page = new ComicPage();
-//    		
-//    		page.setPageName(atts.getValue("PageName"));
-//    		page.setPageOrder(atts.getValue("PageOrder"));
-//    		page.setPageType(atts.getValue("PageType"));
-//    	}
-//    	
-//    	if (atts != null && path.endsWith("TextBlock")) {
-//    	
-//    		textBlock = new TextBlock();
-//    		
-//    		textBlock.setReadingOrder( atts.getValue("ReadingOrder"));
-//    		textBlock.setPosition( atts.getValue("Position"));  
-//    		
-//    		page.addTextBlock(textBlock);
-//    		
-//        } 
+    	if (atts != null && path.endsWith("ComicPage")) {
+    		
+    		page = Core.getProject().getActiveComic().getPage(atts.getValue("PageName"));
+    		
+    		page.setPageOrder(atts.getValue("PageOrder"));
+    		page.setPageType(atts.getValue("PageType"));
+    	}
+    	
+    	if (atts != null && path.endsWith("TextBlock")) {
+    	
+    		textBlock = new ComicTextBlock(page);
+    		
+    		textBlock.setEntryID(atts.getValue("entryID"));
+    		textBlock.setReadingOrder(Integer.valueOf( atts.getValue("ReadingOrder")));
+    		
+    		String[] position = atts.getValue("Position").split(",");
+    		int x = Integer.valueOf(position[0]);
+    		int y = Integer.valueOf(position[1]);
+    		int width = Integer.valueOf(position[2]);
+    		int height = Integer.valueOf(position[3]);
+    		
+    		textBlock.setX(x);
+    		textBlock.setY(y);
+    		textBlock.setWidth(width);
+    		textBlock.setHeight(height);
+    		
+    		page.addTextBlock(textBlock);
+    		
+        } 
 
     }
     

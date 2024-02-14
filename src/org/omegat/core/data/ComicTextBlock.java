@@ -2,14 +2,13 @@ package org.omegat.core.data;
 
 public class ComicTextBlock{
 
+	private String entryID = null;
 	private ComicPage comicPage = null;
-	private SourceTextEntry entry = null;
 	private int readingOrder;
 	private int x, y, width, height;
 	
-	public ComicTextBlock(ComicPage page, SourceTextEntry entry) {
+	public ComicTextBlock(ComicPage page) {
 		this.comicPage = page;
-		this.entry = entry;
 	}	
 	
 	public int getX() {
@@ -36,9 +35,13 @@ public class ComicTextBlock{
 	public void setHeight(int height) {
 		this.height = height;
 	}
-	public SourceTextEntry getEntry() {
-		return entry;
+	public String getEntryID() {
+		return entryID;
 	}
+	public void setEntryID(String entryID) {
+		this.entryID = entryID;
+	}
+	
 	public ComicPage getComicPage() {
 		return comicPage;
 	}

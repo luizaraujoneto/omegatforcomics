@@ -63,6 +63,7 @@ import javax.swing.undo.UndoManager;
 import org.omegat.core.Core;
 import org.omegat.core.CoreEvents;
 import org.omegat.core.data.ComicBook;
+import org.omegat.core.data.ComicPage;
 import org.omegat.core.data.SourceTextEntry;
 import org.omegat.core.events.IApplicationEventListener;
 import org.omegat.core.events.IEntryEventListener;
@@ -108,52 +109,18 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
        
         setMinimumSize(new Dimension(100, 50));
         
-        CoreEvents.registerApplicationEventListener(new IApplicationEventListener() {
-			
-			@Override
-			public void onApplicationStartup() {
-				// TODO Auto-generated method stub
-			}
-			
-			@Override
-			public void onApplicationShutdown() {
-				// TODO Auto-generated method stub
-			}
-		});
-        
-        CoreEvents.registerProjectChangeListener(new IProjectEventListener() {
-			
-			@Override
-			public void onProjectChanged(PROJECT_CHANGE_TYPE eventType) {
-							
-				if ( eventType.equals(PROJECT_CHANGE_TYPE.LOAD)) {
-					
-					for( int i=0; i < Core.getProject().getProjectFiles().size(); i++) {
-						
-						String comicFileName = Core.getProject().getProjectProperties().getSourceRoot() + 
-								Core.getProject().getProjectFiles().get(i).filePath;
-						
-						if (comicFileName.toLowerCase().endsWith(".cbz")) {						
-//							activeComic = new ComicBook(comicFileName);
-						}
-					}
-				}
-				
-			}
-		});
-        
         CoreEvents.registerEntryEventListener(new IEntryEventListener() {
            
             @Override
             public void onEntryActivated(SourceTextEntry newEntry) {
-//            	SegmentProperties props = getSegmentProperties(newEntry.getRawProperties());
             	
             	try {
-            		//ImageIcon page = loadComicPage(props); 
             		
-//            		ImageIcon page = new ImageIcon( activeComic.getPage(0 ));
-//            		
-//            		showComicPage(page);
+            		String entryID = newEntry.getKey().id;
+            		
+            		ComicPage page = Core.getProject().getActiveComic().getPageByTokenId(entryID);
+          		
+            		showComicPage(page);
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
@@ -216,25 +183,13 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
         toolbar.add(lastPage); 
 
         toolbar.addSeparator(new Dimension(5,10));
-        
-//        JButton first = new JButton(new String( "A"));
-//        	        
-//        first.setIcon(UIManager.getIcon("OmegaT.ComicViewArea.first.icon"));
-//        
-////        first.setSize(new Dimension( 150,150));
-//        first.setBorderPainted(true);
-//        
-//        toolbar.add(first);
-//        toolbar.add(new JButton(new String( "B"), new ImageIcon("comicviewarea.previous.ico")));
-//        toolbar.add(new JButton(new String( "C" ), new ImageIcon("org.omegat.gui.resources.comicviewarea.next.ico")));
-//        toolbar.add(new JButton(new String( "D") )); // , new ImageIcon("/org/omegat/gui/resources/comicviewarea.last.ico"))); 
-        
+                
         toolbar.setBorder(new LineBorder(Color.GRAY, 1));
         
         return toolbar;
 	}
 	
-    protected void showComicPage(ImageIcon page) {
+    protected void showComicPage(ComicPage page) {
     	
     	if (page == null) {
     		return;
@@ -246,66 +201,12 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			this.remove(0);			
 		}
 
-//        this.add(new JLabel(UIManager.getIcon("OmegaT.ComicViewArea.first.icon")));
-		this.add(new JLabel(page));
+		this.add(new JLabel(new ImageIcon(page.getPageImage())));
    	
 		this.revalidate();
 		this.repaint(); 
 
     }     
-    
-//    protected ImageIcon loadComicPage(SegmentProperties props) throws IOException{
-//
-//        String fileToBeExtracted=props.getPageName();
-//        String zipPackage=props.getFileName();        
-//        OutputStream out = new FileOutputStream(fileToBeExtracted);
-//        FileInputStream fileInputStream = new FileInputStream(zipPackage);
-//        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream );
-//        ZipInputStream zin = new ZipInputStream(bufferedInputStream);
-//        ZipEntry ze = null;
-//        while ((ze = zin.getNextEntry()) != null) {
-//            if (ze.getName().equals(fileToBeExtracted)) {
-//                byte[] buffer = new byte[9000];
-//                int len;
-//                while ((len = zin.read(buffer)) != -1) {
-//                    out.write(buffer, 0, len);
-//                }
-//                out.close();
-//                break;
-//            }
-//        }
-//        zin.close();
-//		
-//        BufferedImage imagem = ImageIO.read(new File(fileToBeExtracted));
-//        ImageIcon page = new ImageIcon(imagem); 
-//        
-//        return page;
-//        
-//	}
-    
-    
-//	protected SegmentProperties getSegmentProperties(String[] rawProperties) {
-//		
-//    	SegmentProperties props = new SegmentProperties();
-//    	
-//    	props.setFileName(Core.getProject().getProjectProperties().getSourceRoot() + 
-//    					Core.getProject().getProjectFiles().get(0).filePath);
-//    	props.setPageName(rawProperties[1]);
-//    	
-//    	String position[] = rawProperties[9].split(",");
-//    	
-//        try {
-//            props.setX( Integer.valueOf(position[0]));
-//            props.setY( Integer.valueOf(position[1]));
-//            props.setHeight( Integer.valueOf(position[2]));
-//            props.setWidth( Integer.valueOf(position[3]));
-//            
-//        } catch (NumberFormatException e) {
-//            System.out.println("Invalid integer input");
-//        }  	
-//    	    	
-//		return props;
-//	}
 
     protected void onProjectOpen() {
         clear();

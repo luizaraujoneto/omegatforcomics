@@ -59,4 +59,8 @@ public class ComicPage{
 	public void setPageImage(Image image) {
 		this.pageImage = image;
 	}
+
+	public List<ComicTextBlock> getTextBlocks() {
+		return textBlocks;
+	}
 }

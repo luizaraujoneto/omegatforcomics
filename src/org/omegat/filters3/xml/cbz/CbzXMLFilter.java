@@ -109,36 +109,38 @@ public class CbzXMLFilter extends XMLFilter {
         
                 for (int i = 0; i < entryText.size(); i++) {
                 	
-                	String[] props = configureProperties(page, i);
+                	ComicTextBlock textBlock = page.getTextBlock(i); 
                 	
-                    entryParseCallback.addEntryWithProperties(null, entryText.get(i), null, false,
+                	String[] props = configureProperties(textBlock);
+                	
+                    entryParseCallback.addEntryWithProperties(textBlock.getEntryID(), entryText.get(i), null, false,
                             props, null, this, protectedParts.get(i));
                 }
             }
 
-        	page.clearTextBlocks();
-        	page = null;
             entryText.clear();
             protectedParts.clear();
         } 
     }    
 
     
-    private String[] configureProperties(ComicPage page, int i) {
+    private String[] configureProperties(ComicTextBlock textBlock) {
 		
     	ArrayList<String> props = new ArrayList<String>();
     	
     	props.add("PageName" );
-    	props.add(page.getPageName());
+    	props.add(textBlock.getComicPage().getPageName());
     	props.add("PageOrder" );
-    	props.add(page.getPageOrder());
+    	props.add(textBlock.getComicPage().getPageOrder());
     	props.add("PageType");
-    	props.add(page.getPageType());
+    	props.add(textBlock.getComicPage().getPageType());
     	
-//    	props.add("ReadingOrder");
-//    	props.add(page.getTextBlock(i).getReadingOrder());
-//    	props.add("Position" );
-//    	props.add(page.getTextBlock(i).getPosition());	
+    	props.add("entryID");
+    	props.add(textBlock.getEntryID());
+    	props.add("ReadingOrder");
+    	props.add(String.valueOf( textBlock.getReadingOrder()));
+    	props.add("Position" );
+    	props.add(String.format(" %d, %d, %d, %d", textBlock.getX(), textBlock.getY(), textBlock.getWidth(), textBlock.getHeight() ));	
     	
     	return props.toArray(new String[props.size()]);
 	}

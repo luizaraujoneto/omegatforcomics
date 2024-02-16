@@ -94,7 +94,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     
 	private int currentPageIndex = -1;
 	
-	enum NavigateComicPage { FIRST_PAGE, PREVIOUS_PAGE, NEXT_PAGE, LAST_PAGE, CURRENT_PAGE };
+	enum NavigateComicPage { FIRST_PAGE, PREVIOUS_PAGE, NEXT_PAGE, LAST_PAGE, CURRENT_SEGMENT };
 	
     /** Creates new Comic Viewer Area Pane */
     public ComicViewerArea(IMainWindow mw) {
@@ -121,13 +121,8 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
             public void onEntryActivated(SourceTextEntry newEntry) {
             	
             	try {
-            		
-            		String entryID = newEntry.getKey().id;
-            		
-            		ComicPage page = Core.getProject().getActiveComic().getPageByTokenId(entryID);
-            		currentPageIndex = Core.getProject().getActiveComic().getPages().indexOf(page);
-          		
-            		showComicPage(NavigateComicPage.CURRENT_PAGE);
+
+            		showComicPage(NavigateComicPage.CURRENT_SEGMENT);
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
@@ -212,10 +207,6 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 
 	protected void showComicPage(NavigateComicPage move) {
 
-    	if (currentPageIndex == -1 ) {
-    		return;
-    	}    	
-    	
     	switch(move) {
     	case FIRST_PAGE:
 			currentPageIndex = 0;				
@@ -230,7 +221,11 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     	case LAST_PAGE:
 			currentPageIndex = Core.getProject().getActiveComic().getPages().size() - 1;				
 			break;
-    	case CURRENT_PAGE:
+    	case CURRENT_SEGMENT:
+    		String entryID = Core.getEditor().getCurrentEntry().getKey().id;    		
+    		ComicPage page = Core.getProject().getActiveComic().getPageByTokenId(entryID);
+    		currentPageIndex = Core.getProject().getActiveComic().getPages().indexOf(page);    		
+    		
     		break;
     	}  	 	   	
     	

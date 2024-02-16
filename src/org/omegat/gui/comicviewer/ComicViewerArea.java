@@ -155,6 +155,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showComicPage(NavigateComicPage.FIRST_PAGE);
+				navigateToFirstSegmentOfPage();
 			}
 		});
 
@@ -163,6 +164,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showComicPage(NavigateComicPage.PREVIOUS_PAGE);
+				navigateToFirstSegmentOfPage();
 			}
 		});
 		
@@ -171,6 +173,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showComicPage(NavigateComicPage.NEXT_PAGE);
+				navigateToFirstSegmentOfPage();
 			}
 		});
 		
@@ -179,6 +182,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				showComicPage(NavigateComicPage.LAST_PAGE);
+				navigateToFirstSegmentOfPage();
 			}
 		});
 		
@@ -194,7 +198,19 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
         return toolbar;
 	}
 	
-    protected void showComicPage(NavigateComicPage move) {
+    protected void navigateToFirstSegmentOfPage() {
+		
+    	String entryID = Core.getProject().getActiveComic().getPage(currentPageIndex).getTextBlocks().get(0).getEntryID();
+    	  
+    	for ( SourceTextEntry entry: Core.getProject().getAllEntries()) {
+    		if (entry.getKey().id.equals(entryID)) {
+    			Core.getEditor().gotoEntry(entry.getSrcText(), entry.getKey());
+    		}
+    	}
+		
+	}
+
+	protected void showComicPage(NavigateComicPage move) {
 
     	if (currentPageIndex == -1 ) {
     		return;
@@ -225,19 +241,9 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     	}
 
     	imagePanel.setIcon(new ImageIcon(page.getPageImage()));
-    	    	   	
-//		int cc = this.getComponentCount();
-//		
-//		for( int i=0; i<cc ;i++){
-//			this.remove(0);			
-//		}
-//
-//		this.add(new JLabel(new ImageIcon(page.getPageImage())));
-   	
+  	
 		this.revalidate();
-		this.repaint(); 
-		
-		
+		this.repaint(); 		
     }     
 
     protected void onProjectOpen() {

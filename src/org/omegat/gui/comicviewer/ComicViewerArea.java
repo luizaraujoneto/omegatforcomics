@@ -92,8 +92,10 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
     
     JLabel imagePanel = null;
     
-	private ComicBook activeComic = null;
-
+	private int currentPageIndex = -1;
+	
+	enum NavigateComicPage { FIRST_PAGE, PREVIOUS_PAGE, NEXT_PAGE, LAST_PAGE, CURRENT_PAGE };
+	
     /** Creates new Comic Viewer Area Pane */
     public ComicViewerArea(IMainWindow mw) {
         super(true);
@@ -105,7 +107,11 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
         this.setLayout(new BoxLayout(this, BoxLayout.Y_AXIS)); 
         this.setBackground(Color.WHITE);
 
-        scrollPane.setColumnHeaderView(createToolBar());   
+        scrollPane.setColumnHeaderView(createToolBar()); 
+        
+        imagePanel = new JLabel();
+        
+        this.add(imagePanel);
        
         setMinimumSize(new Dimension(100, 50));
         
@@ -119,8 +125,9 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
             		String entryID = newEntry.getKey().id;
             		
             		ComicPage page = Core.getProject().getActiveComic().getPageByTokenId(entryID);
+            		currentPageIndex = Core.getProject().getActiveComic().getPages().indexOf(page);
           		
-            		showComicPage(page);
+            		showComicPage(NavigateComicPage.CURRENT_PAGE);
             		
             	} catch (Exception e) {
                     Logger.getLogger(getClass().getName()).log(Level.INFO, e.getMessage() );
@@ -137,9 +144,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 
 	private JToolBar createToolBar() {
 		JToolBar toolbar = new JToolBar();
-		
-		//toolbar.setSize(new Dimension( 300, 100));
-        
+		      
 		JButton firstPage = new JButton(new String("First"));
 		JButton previousPage = new JButton(new String("Previous"));
 		JButton nextPage = new JButton(new String("Next"));
@@ -149,7 +154,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				 JOptionPane.showMessageDialog(null, "First");
+				showComicPage(NavigateComicPage.FIRST_PAGE);
 			}
 		});
 
@@ -157,7 +162,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				 JOptionPane.showMessageDialog(null, "Previous");
+				showComicPage(NavigateComicPage.PREVIOUS_PAGE);
 			}
 		});
 		
@@ -165,7 +170,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				 JOptionPane.showMessageDialog(null, "Next");
+				showComicPage(NavigateComicPage.NEXT_PAGE);
 			}
 		});
 		
@@ -173,7 +178,7 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
 			
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				 JOptionPane.showMessageDialog(null, "Last");
+				showComicPage(NavigateComicPage.LAST_PAGE);
 			}
 		});
 		
@@ -189,23 +194,50 @@ public class ComicViewerArea extends JPanel implements IComicViewer, IPaneMenu {
         return toolbar;
 	}
 	
-    protected void showComicPage(ComicPage page) {
+    protected void showComicPage(NavigateComicPage move) {
+
+    	if (currentPageIndex == -1 ) {
+    		return;
+    	}    	
+    	
+    	switch(move) {
+    	case FIRST_PAGE:
+			currentPageIndex = 0;				
+    		break;
+    	case PREVIOUS_PAGE:
+			currentPageIndex = currentPageIndex > 0 ? currentPageIndex - 1 : 0;				
+			break;
+    	case NEXT_PAGE:
+			int lastPage = Core.getProject().getActiveComic().getPages().size() - 1;
+			currentPageIndex = currentPageIndex < lastPage ? currentPageIndex + 1 : lastPage;				
+			break;
+    	case LAST_PAGE:
+			currentPageIndex = Core.getProject().getActiveComic().getPages().size() - 1;				
+			break;
+    	case CURRENT_PAGE:
+    		break;
+    	}  	 	   	
+    	
+    	ComicPage page = Core.getProject().getActiveComic().getPage(currentPageIndex);
     	
     	if (page == null) {
     		return;
     	}
-    	
-		int cc = this.getComponentCount();
-		
-		for( int i=0; i<cc ;i++){
-			this.remove(0);			
-		}
 
-		this.add(new JLabel(new ImageIcon(page.getPageImage())));
+    	imagePanel.setIcon(new ImageIcon(page.getPageImage()));
+    	    	   	
+//		int cc = this.getComponentCount();
+//		
+//		for( int i=0; i<cc ;i++){
+//			this.remove(0);			
+//		}
+//
+//		this.add(new JLabel(new ImageIcon(page.getPageImage())));
    	
 		this.revalidate();
 		this.repaint(); 
-
+		
+		
     }     
 
     protected void onProjectOpen() {

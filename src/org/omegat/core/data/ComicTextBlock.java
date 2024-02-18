@@ -1,5 +1,8 @@
 package org.omegat.core.data;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+
 public class ComicTextBlock{
 
 	private String entryID = null;
@@ -50,6 +53,10 @@ public class ComicTextBlock{
 	}
 	public void setReadingOrder(int readingOrder) {
 		this.readingOrder = readingOrder;
+	}
+
+	public Rectangle getRectangle() {
+		return new Rectangle(getX(), getY(), getWidth(), getHeight());
 	}
 	
 }

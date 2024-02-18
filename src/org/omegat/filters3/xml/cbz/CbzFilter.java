@@ -29,12 +29,9 @@
 package org.omegat.filters3.xml.cbz;
 
 import java.awt.Image;
-import java.awt.image.BufferedImage;
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,10 +43,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.zip.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipOutputStream;
 
 import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
 import javax.swing.ImageIcon;
 
 import org.apache.commons.io.FileUtils;
@@ -61,7 +59,6 @@ import org.omegat.filters2.AbstractFilter;
 import org.omegat.filters2.FilterContext;
 import org.omegat.filters2.Instance;
 import org.omegat.filters2.TranslationException;
-
 import org.omegat.util.OStrings;
 
 /**

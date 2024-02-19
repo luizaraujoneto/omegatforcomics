@@ -30,11 +30,16 @@
 
 package org.omegat.gui.editor;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -43,9 +48,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JDialog;
 import javax.swing.JEditorPane;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
+import javax.swing.border.LineBorder;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.BoxView;
@@ -67,7 +79,9 @@ import org.omegat.core.data.SourceTextEntry;
 import org.omegat.gui.editor.autocompleter.AutoCompleter;
 import org.omegat.gui.shortcuts.PropertiesShortcuts;
 import org.omegat.util.OStrings;
+import org.omegat.util.Preferences;
 import org.omegat.util.StringUtil;
+import org.omegat.util.gui.IPaneMenu;
 import org.omegat.util.gui.Styles;
 import org.omegat.util.gui.UIDesignManager;
 
@@ -80,7 +94,7 @@ import org.omegat.util.gui.UIDesignManager;
  * @author Zoltan Bartko
  */
 @SuppressWarnings("serial")
-public class EditorTextArea3 extends JEditorPane {
+public class EditorTextArea3 extends JEditorPane implements IPaneMenu {
 
     private static final KeyStroke KEYSTROKE_CONTEXT_MENU = PropertiesShortcuts.getEditorShortcuts()
             .getKeyStroke("editorContextMenu");
@@ -157,7 +171,7 @@ public class EditorTextArea3 extends JEditorPane {
                 }
             }
         });
-
+        
         addMouseListener(mouseListener);
 
         // Custom caret for overtype mode
@@ -190,7 +204,7 @@ public class EditorTextArea3 extends JEditorPane {
 
         updateLockInsertMessage();
     }
-
+    
     @Override
     public void setFont(Font font) {
         super.setFont(font);
@@ -863,4 +877,12 @@ public class EditorTextArea3 extends JEditorPane {
             }
         }
     }
+
+	@Override
+	public void populatePaneMenu(JPopupMenu menu) {
+		final JMenuItem notify = new JCheckBoxMenuItem(OStrings.getString("GUI_NOTESWINDOW_NOTIFICATIONS"));
+		notify.setSelected(Preferences.isPreference(Preferences.NOTIFY_NOTES));
+		notify.addActionListener(e -> Preferences.setPreference(Preferences.NOTIFY_NOTES, notify.isSelected()));
+		menu.add(notify);
+	}
 }
